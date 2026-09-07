@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 interface InvoicePdfProps {
   invoice: DownloadInvoicePdfProps["invoice"];
   items: DownloadInvoicePdfProps["items"];
+  userName: string;
 }
 
 type InvoicePdfComponent = ComponentType<InvoicePdfProps>;
@@ -20,6 +21,7 @@ interface LoadedPdfComponents {
 }
 
 interface DownloadInvoicePdfProps {
+  userName: string;
   invoice: {
     invoice_number: string;
     invoice_date: string;
@@ -33,9 +35,6 @@ interface DownloadInvoicePdfProps {
       name: string;
       phone: string | null;
       address: string | null;
-    } | null;
-    profiles: {
-      full_name: string | null;
     } | null;
   };
 
@@ -51,6 +50,7 @@ interface DownloadInvoicePdfProps {
 export function DownloadInvoicePdf({
   invoice,
   items,
+  userName,
 }: DownloadInvoicePdfProps) {
   const [pdfComponents, setPdfComponents] =
     useState<LoadedPdfComponents | null>(null);
@@ -91,7 +91,9 @@ export function DownloadInvoicePdf({
 
   return (
     <PDFDownloadLink
-      document={<InvoicePdf invoice={invoice} items={items} />}
+      document={
+        <InvoicePdf invoice={invoice} items={items} userName={userName} />
+      }
       fileName={`facture-${invoice.invoice_number}.pdf`}
     >
       {({ loading }) => (

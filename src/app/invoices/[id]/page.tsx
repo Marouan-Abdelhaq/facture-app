@@ -53,11 +53,20 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
 
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    notFound();
+  }
+
   const { data: invoiceData, error } = await supabase
     .from("invoices")
     .select(
       `
       id,
+      user_id,
       invoice_number,
       status,
       invoice_date,
@@ -71,13 +80,11 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
         name,
         phone,
         address
-      ),
-      profiles (
-        full_name
       )
     `,
     )
     .eq("id", id)
+    .eq("user_id", user.id)
     .single();
 
   if (error) {
@@ -99,8 +106,13 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
   const invoice = {
     ...invoiceData,
     clients: normalizeRelation(invoiceData.clients),
-    profiles: normalizeRelation(invoiceData.profiles),
   };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .maybeSingle();
 
   const { data: items, error: itemsError } = await supabase
     .from("invoice_items")
@@ -194,7 +206,11 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
         {/* Modifier */}
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <DownloadInvoicePdf invoice={invoice} items={items ?? []} />
+          <DownloadInvoicePdf
+            invoice={invoice}
+            items={items ?? []}
+            userName={profile?.full_name ?? "Mon Cahier"}
+          />
 
           <Button variant="outline" asChild>
             <Link href={`/invoices/${invoice.id}/edit`}>

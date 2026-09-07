@@ -15,10 +15,8 @@ interface InvoicePdfProps {
       phone: string | null;
       address: string | null;
     } | null;
-    profiles: {
-      full_name: string | null;
-    } | null;
   };
+  userName: string;
 
   items: {
     id: string;
@@ -226,7 +224,7 @@ function getStatusLabel(status: string) {
   return labels[status] ?? status;
 }
 
-export function InvoicePdf({ invoice, items }: InvoicePdfProps) {
+export function InvoicePdf({ invoice, items, userName }: InvoicePdfProps) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -236,9 +234,7 @@ export function InvoicePdf({ invoice, items }: InvoicePdfProps) {
           {/* ENTREPRISE */}
 
           <View style={styles.companySection}>
-            <Text style={styles.companyName}>
-              {invoice.profiles?.full_name ?? "Utilisateur"}
-            </Text>
+            <Text style={styles.companyName}>{userName}</Text>
           </View>
 
           {/* FACTURE */}
@@ -353,8 +349,7 @@ export function InvoicePdf({ invoice, items }: InvoicePdfProps) {
         {/* FOOTER */}
 
         <Text style={styles.footer}>
-          Merci pour votre confiance —{" "}
-          {invoice.profiles?.full_name ?? "Utilisateur"}
+          Merci pour votre confiance — {userName}
         </Text>
       </Page>
     </Document>

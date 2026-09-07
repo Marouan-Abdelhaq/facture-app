@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { Plus, FileText } from "lucide-react";
 
@@ -11,6 +12,14 @@ import { InvoicesList } from "@/components/invoices/invoices-list";
 
 export default async function InvoicesPage() {
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
 
   const { data: invoices, error } = await supabase
     .from("invoices")
@@ -29,6 +38,7 @@ export default async function InvoicesPage() {
       )
     `,
     )
+    .eq("user_id", user.id)
     .order("invoice_date", { ascending: false });
 
   if (error) {
