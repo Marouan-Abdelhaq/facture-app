@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Plus, FileText } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { normalizeRelation } from "@/lib/supabase/relations";
 
 import { Button } from "@/components/ui/button";
 
@@ -44,7 +45,7 @@ export default async function InvoicesPage() {
 
   const normalizedInvoices = (invoices ?? []).map((invoice) => ({
     ...invoice,
-    clients: invoice.clients[0] ?? null,
+    clients: normalizeRelation(invoice.clients),
   }));
 
   return (

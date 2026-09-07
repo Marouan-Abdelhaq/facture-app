@@ -12,7 +12,7 @@ interface Invoice {
   total_amount: string;
   remaining_amount: string;
   invoice_date: string;
-  client: {
+  clients: {
     id: string;
     name: string;
   } | null;
@@ -90,7 +90,7 @@ export function RecentInvoices({ invoices }: RecentInvoicesProps) {
                   </p>
 
                   <p className="text-sm text-muted-foreground">
-                    {invoice.client?.name ?? "Client inconnu"}
+                    {invoice.clients?.name ?? "Client inconnu"}
                   </p>
                 </div>
 

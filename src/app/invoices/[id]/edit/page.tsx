@@ -40,7 +40,21 @@ export default async function EditInvoicePage({
     .eq("id", id)
     .single();
 
-  if (invoiceError || !invoice) {
+  if (invoiceError) {
+    return (
+      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
+        <h2 className="font-semibold text-destructive">
+          Erreur lors du chargement de la facture
+        </h2>
+
+        <p className="mt-2 text-sm text-muted-foreground">
+          {invoiceError.message}
+        </p>
+      </div>
+    );
+  }
+
+  if (!invoice) {
     notFound();
   }
 

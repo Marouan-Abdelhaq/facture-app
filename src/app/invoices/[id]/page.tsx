@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, FileText, Pencil } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { normalizeRelation } from "@/lib/supabase/relations";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -79,14 +80,26 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
     .eq("id", id)
     .single();
 
-  if (error || !invoiceData) {
+  if (error) {
+    return (
+      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
+        <h2 className="font-semibold text-destructive">
+          Erreur lors du chargement de la facture
+        </h2>
+
+        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+      </div>
+    );
+  }
+
+  if (!invoiceData) {
     notFound();
   }
 
   const invoice = {
     ...invoiceData,
-    clients: invoiceData.clients[0] ?? null,
-    profiles: invoiceData.profiles[0] ?? null,
+    clients: normalizeRelation(invoiceData.clients),
+    profiles: normalizeRelation(invoiceData.profiles),
   };
 
   const { data: items, error: itemsError } = await supabase

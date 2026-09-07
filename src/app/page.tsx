@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { normalizeRelation } from "@/lib/supabase/relations";
 
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { RecentInvoices } from "@/components/dashboard/recent-invoices";
@@ -90,7 +91,7 @@ export default async function Home() {
 
   const normalizedInvoices = (invoices ?? []).map((invoice) => ({
     ...invoice,
-    client: invoice.clients[0] ?? null,
+    clients: normalizeRelation(invoice.clients),
   }));
 
   /*
