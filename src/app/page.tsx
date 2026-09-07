@@ -139,12 +139,13 @@ export default async function Home() {
 
       {/* Statistiques principales */}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatsCard
           title="Total ventes"
           value={formatCurrency(data.total_sales)}
           description={`${data.total_invoices} facture(s)`}
           icon={<CircleDollarSign className="size-5 text-muted-foreground" />}
+          className="col-span-2 xl:col-span-1"
         />
 
         <StatsCard

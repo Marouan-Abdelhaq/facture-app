@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Header } from "@/components/layout/header";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { Sidebar } from "@/components/layout/sidebar";
 
 interface AppShellProps {
@@ -26,10 +27,12 @@ export function AppShell({ children }: AppShellProps) {
       <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-muted/30">
         <Header />
 
-        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pb-24 pt-5 sm:p-6 lg:p-8">
           {children}
         </div>
       </main>
+
+      <MobileNav />
     </div>
   );
 }

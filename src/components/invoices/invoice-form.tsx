@@ -226,7 +226,7 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
 
       {/* Informations facture */}
 
-      <div className="space-y-6 rounded-xl border bg-card p-6">
+      <div className="space-y-6 rounded-xl border bg-card p-4 sm:p-6">
         <h3 className="font-semibold">Informations de la facture</h3>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -239,7 +239,7 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
               id="client"
               value={clientId}
               onChange={(event) => setClientId(event.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm md:h-10"
             >
               <option value="">Sélectionner un client</option>
 
@@ -283,7 +283,7 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
 
       {/* Produits */}
 
-      <div className="space-y-6 rounded-xl border bg-card p-6">
+      <div className="space-y-6 rounded-xl border bg-card p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-semibold">Produits et services</h3>
@@ -368,7 +368,7 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
 
       {/* Actions */}
 
-      <div className="flex justify-end gap-4">
+      <div className="sticky bottom-20 z-10 -mx-1 flex justify-end gap-3 border-t bg-background/95 py-3 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:py-0">
         <Button type="button" variant="outline" onClick={() => router.back()}>
           <ArrowLeft className="mr-2 size-4" />
           Annuler

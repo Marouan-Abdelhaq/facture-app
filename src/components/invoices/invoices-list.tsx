@@ -151,7 +151,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
         <select
           value={status}
           onChange={(event) => setStatus(event.target.value)}
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm sm:w-[220px]"
+          className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm md:h-10 sm:w-[220px]"
         >
           <option value="all">Tous les statuts</option>
 
@@ -171,7 +171,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
         <select
           value={dateFilter}
           onChange={(event) => setDateFilter(event.target.value)}
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm sm:w-[220px]"
+          className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm md:h-10 sm:w-[220px]"
         >
           <option value="all">Toutes les dates</option>
 
@@ -200,12 +200,20 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
               <Link
                 key={invoice.id}
                 href={`/invoices/${invoice.id}`}
-                className="flex flex-col gap-4 rounded-lg border p-4 transition hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-sm transition hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between sm:p-5"
               >
                 {/* Informations */}
 
                 <div>
-                  <p className="font-semibold">{invoice.invoice_number}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-semibold text-primary">
+                      {invoice.invoice_number}
+                    </p>
+
+                    <Badge variant="secondary" className="sm:hidden">
+                      {getStatusLabel(invoice.status)}
+                    </Badge>
+                  </div>
 
                   <p className="text-sm text-muted-foreground">
                     {invoice.clients?.name ?? "Client inconnu"}
@@ -219,15 +227,25 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                 {/* Montant + Statut */}
 
                 <div className="flex items-center gap-6">
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Total</p>
+                  <div className="flex gap-6 sm:block sm:text-right">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total</p>
 
-                    <p className="font-semibold">
-                      {formatCurrency(invoice.total_amount)}
-                    </p>
+                      <p className="font-semibold">
+                        {formatCurrency(invoice.total_amount)}
+                      </p>
+                    </div>
+
+                    <div className="sm:mt-2">
+                      <p className="text-sm text-muted-foreground">Restant</p>
+
+                      <p className="font-medium">
+                        {formatCurrency(invoice.remaining_amount)}
+                      </p>
+                    </div>
                   </div>
 
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="hidden sm:inline-flex">
                     {getStatusLabel(invoice.status)}
                   </Badge>
                 </div>

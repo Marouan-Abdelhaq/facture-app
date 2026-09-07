@@ -4,7 +4,14 @@ import { useState } from "react";
 
 import Link from "next/link";
 
-import { Search, Users, CheckCircle2, TriangleAlert } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Phone,
+  Search,
+  TriangleAlert,
+  Users,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 
@@ -119,7 +126,7 @@ export function ClientsList({ clients }: ClientsListProps) {
       {/* Liste */}
 
       {filteredClients.length > 0 ? (
-        <div className="overflow-hidden rounded-xl border">
+        <div className="md:overflow-hidden md:rounded-xl md:border">
           {/* Header */}
 
           <div className="hidden grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-4 border-b bg-muted/50 px-6 py-4 text-sm font-medium text-muted-foreground md:grid">
@@ -134,17 +141,17 @@ export function ClientsList({ clients }: ClientsListProps) {
 
           {/* Clients */}
 
-          <div className="divide-y">
+          <div className="space-y-3 md:space-y-0 md:divide-y">
             {filteredClients.map((client) => (
               <Link
                 key={client.client_id}
                 href={`/clients/${client.client_id}`}
-                className="grid gap-3 px-6 py-4 transition-colors hover:bg-muted/50 md:grid-cols-[2fr_1.5fr_1.5fr_1fr] md:items-center md:gap-4"
+                className="group relative grid gap-4 rounded-xl border bg-card p-4 shadow-sm transition-colors hover:bg-muted/50 md:rounded-none md:border-0 md:px-6 md:py-4 md:shadow-none md:grid-cols-[2fr_1.5fr_1.5fr_1fr] md:items-center md:gap-4"
               >
                 {/* Client */}
 
                 <div className="flex items-center gap-3">
-                  <div className="rounded-full bg-muted p-2">
+                  <div className="rounded-full bg-muted p-2.5">
                     <Users className="size-4 text-muted-foreground" />
                   </div>
 
@@ -162,7 +169,10 @@ export function ClientsList({ clients }: ClientsListProps) {
                 {/* Téléphone */}
 
                 <div className="text-sm text-muted-foreground">
-                  {client.phone ?? "—"}
+                  <span className="flex items-center gap-2">
+                    <Phone className="size-4 md:hidden" />
+                    {client.phone ?? "Téléphone non renseigné"}
+                  </span>
                 </div>
 
                 {/* Total ventes */}
@@ -172,8 +182,12 @@ export function ClientsList({ clients }: ClientsListProps) {
                     Total ventes
                   </p>
 
-                  <p className="font-medium">
+                  <p className="font-medium text-primary">
                     {formatCurrency(client.total_sales)}
+                  </p>
+
+                  <p className="text-xs text-muted-foreground md:hidden">
+                    {client.total_invoices} facture(s)
                   </p>
                 </div>
 
@@ -212,6 +226,8 @@ export function ClientsList({ clients }: ClientsListProps) {
                     </div>
                   )}
                 </div>
+
+                <ArrowRight className="absolute right-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground transition-transform group-hover:translate-x-1 md:hidden" />
               </Link>
             ))}
           </div>
