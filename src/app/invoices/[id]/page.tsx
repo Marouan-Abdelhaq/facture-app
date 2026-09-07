@@ -108,11 +108,20 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
     clients: normalizeRelation(invoiceData.clients),
   };
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("full_name")
     .eq("id", user.id)
     .maybeSingle();
+
+  if (profileError) {
+    console.error(
+      "Erreur lors du chargement du profil :",
+      profileError.message,
+    );
+  }
+
+  const userName = profile?.full_name?.trim() || user.email || "Mon Cahier";
 
   const { data: items, error: itemsError } = await supabase
     .from("invoice_items")
@@ -209,7 +218,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
           <DownloadInvoicePdf
             invoice={invoice}
             items={items ?? []}
-            userName={profile?.full_name ?? "Mon Cahier"}
+            userName={userName}
           />
 
           <Button variant="outline" asChild>
