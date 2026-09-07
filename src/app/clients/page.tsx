@@ -60,13 +60,24 @@ export default async function ClientsPage() {
           </p>
         </div>
 
-        <Button asChild>
+        <Button asChild className="hidden sm:inline-flex">
           <Link href="/clients/new">
             <Plus className="mr-2 size-4" />
             Nouveau client
           </Link>
         </Button>
       </div>
+
+      <Button
+        asChild
+        size="lg"
+        className="fixed bottom-24 right-4 z-30 rounded-full px-4 shadow-lg sm:hidden"
+      >
+        <Link href="/clients/new">
+          <Plus className="mr-2 size-5" />
+          Nouveau client
+        </Link>
+      </Button>
 
       <ClientsList clients={clients ?? []} />
     </div>

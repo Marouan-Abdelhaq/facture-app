@@ -1,15 +1,12 @@
 "use client";
 
-import { CalendarDays, Menu, MoreHorizontal, Receipt } from "lucide-react";
+import { CalendarDays, Receipt, UserRound } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { LogoutButton } from "@/components/auth/logout-button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -35,29 +32,14 @@ export function Header() {
   return (
     <header className="flex min-h-14 items-center justify-between border-b border-border/80 bg-card/95 px-3 backdrop-blur-sm sm:min-h-20 sm:px-6 lg:px-8">
       <div className="flex min-w-0 items-center gap-2 sm:block">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className="flex size-11 items-center justify-center rounded-md text-primary hover:bg-muted sm:hidden"
-              aria-label="Ouvrir le menu"
-            >
-              <Menu className="size-5" />
-            </button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
-            <DropdownMenuItem>Profil</DropdownMenuItem>
-            <DropdownMenuItem>Administration</DropdownMenuItem>
-            <DropdownMenuItem>Utilisateurs</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <LogoutButton />
-          </DropdownMenuContent>
-        </DropdownMenu>
-
         <div className="flex items-center gap-2 sm:block">
-          <Receipt className="size-5 text-[#c94c4c] sm:hidden" />
+          <Receipt
+            className="size-5 text-[#c94c4c] sm:hidden"
+            aria-hidden="true"
+          />
+          <span className="text-lg font-semibold text-primary sm:hidden">
+            Mabdelha
+          </span>
           <p className="mb-1 hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-[#c94c4c] sm:block">
             Mon cahier
           </p>
@@ -73,7 +55,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-1 text-xs text-muted-foreground sm:gap-2 sm:text-sm">
-        <CalendarDays className="size-4" />
+        <CalendarDays className="hidden size-4 sm:block" />
 
         <span className="hidden sm:inline">{today}</span>
 
@@ -81,16 +63,15 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="flex size-11 items-center justify-center rounded-md hover:bg-muted sm:hidden"
-              aria-label="Actions supplémentaires"
+              className="flex size-11 items-center justify-center rounded-md text-primary hover:bg-muted"
+              aria-label="Ouvrir le menu utilisateur"
             >
-              <MoreHorizontal className="size-5" />
+              <UserRound className="size-5" />
             </button>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem>Paramètres</DropdownMenuItem>
-            <DropdownMenuItem>Aide</DropdownMenuItem>
+            <LogoutButton />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

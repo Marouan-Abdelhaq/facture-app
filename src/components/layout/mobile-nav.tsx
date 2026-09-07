@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Home, Package, Users } from "lucide-react";
+import { FileText, Home, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: "Accueil", href: "/", icon: Home },
+  { name: "Dashboard", href: "/", icon: Home },
   { name: "Clients", href: "/clients", icon: Users },
   { name: "Factures", href: "/invoices", icon: FileText },
-  { name: "Stock", href: "/stock", icon: Package },
 ];
 
 export function MobileNav() {
@@ -21,7 +20,7 @@ export function MobileNav() {
       aria-label="Navigation principale"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(30,58,95,0.08)] backdrop-blur-md md:hidden"
     >
-      <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
+      <div className="mx-auto grid max-w-md grid-cols-3 gap-1">
         {navigation.map((item) => {
           const Icon = item.icon;
           const isActive =

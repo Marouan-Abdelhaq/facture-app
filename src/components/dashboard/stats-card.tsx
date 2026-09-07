@@ -20,13 +20,13 @@ export function StatsCard({
 }: StatsCardProps) {
   return (
     <Card className={cn(className)}>
-      <CardContent className="flex items-start justify-between p-5 sm:p-6">
+      <CardContent className="flex items-start justify-between p-4 sm:p-6">
         <div className="space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             {title}
           </p>
 
-          <p className="text-2xl font-semibold tracking-tight text-primary">
+          <p className="text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
             {value}
           </p>
 

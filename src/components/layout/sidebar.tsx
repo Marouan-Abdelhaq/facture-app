@@ -6,8 +6,6 @@ import { LayoutDashboard, Users, FileText, Receipt } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { LogoutButton } from "@/components/auth/logout-button";
-
 const navigation = [
   {
     name: "Dashboard",
@@ -76,12 +74,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      {/* Bottom */}
-
-      <div className="flex gap-1 border-t border-sidebar-border p-3">
-        <LogoutButton />
-      </div>
     </aside>
   );
 }

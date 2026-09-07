@@ -146,11 +146,11 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6 sm:gap-8">
       {/* Header */}
 
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-4">
+      <div className="order-1 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <Button variant="outline" size="icon" asChild>
             <Link href="/invoices">
               <ArrowLeft className="size-4" />
@@ -158,8 +158,8 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
           </Button>
 
           <div>
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold tracking-tight">
+            <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+              <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
                 Facture {invoice.invoice_number}
               </h2>
 
@@ -176,7 +176,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
 
         {/* Modifier */}
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <DownloadInvoicePdf invoice={invoice} items={items ?? []} />
 
           <Button variant="outline" asChild>
@@ -190,7 +190,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
 
       {/* Informations */}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="order-2 grid gap-4 lg:grid-cols-2 lg:gap-6">
         {/* Client */}
 
         <Card>
@@ -258,83 +258,85 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
         </Card>
       </div>
 
-      {/* Paiement ou remboursement */}
+      <div className="order-4 space-y-6">
+        {/* Paiement ou remboursement */}
 
-      {invoice.status === "overpaid" ? (
-        <RefundConfirmation
-          invoiceId={invoice.id}
-          refundAmount={Number(invoice.refund_amount)}
-        />
-      ) : invoice.status !== "paid" ? (
-        <PaymentForm
-          invoiceId={invoice.id}
-          remainingAmount={Number(invoice.remaining_amount)}
-        />
-      ) : null}
+        {invoice.status === "overpaid" ? (
+          <RefundConfirmation
+            invoiceId={invoice.id}
+            refundAmount={Number(invoice.refund_amount)}
+          />
+        ) : invoice.status !== "paid" ? (
+          <PaymentForm
+            invoiceId={invoice.id}
+            remainingAmount={Number(invoice.remaining_amount)}
+          />
+        ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Historique des paiements</CardTitle>
-        </CardHeader>
+        <Card>
+          <CardHeader>
+            <CardTitle>Historique des paiements</CardTitle>
+          </CardHeader>
 
-        <CardContent>
-          {payments && payments.length > 0 ? (
-            <div className="space-y-4">
-              <div className="hidden grid-cols-[1fr_160px_1fr_80px] gap-4 border-b pb-3 text-sm font-medium text-muted-foreground md:grid">
-                <div>Date</div>
-                <div>Montant</div>
-                <div>Notes</div>
-                <div>Actions</div>
-              </div>
-
-              {payments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="grid gap-3 border-b pb-4 md:grid-cols-[1fr_160px_1fr_80px] md:gap-4"
-                >
-                  <div>
-                    <span className="text-sm text-muted-foreground md:hidden">
-                      Date :{" "}
-                    </span>
-
-                    {formatDate(payment.payment_date)}
-                  </div>
-
-                  <div className="font-semibold">
-                    <span className="text-sm text-muted-foreground md:hidden">
-                      Montant :{" "}
-                    </span>
-
-                    {formatCurrency(payment.amount)}
-                  </div>
-
-                  <div className="text-sm text-muted-foreground">
-                    <span className="md:hidden">Notes : </span>
-
-                    {payment.notes ?? "Aucune note"}
-                  </div>
-
-                  <div className="flex items-center">
-                    <DeletePaymentButton paymentId={payment.id} />
-                  </div>
+          <CardContent>
+            {payments && payments.length > 0 ? (
+              <div className="space-y-4">
+                <div className="hidden grid-cols-[1fr_160px_1fr_80px] gap-4 border-b pb-3 text-sm font-medium text-muted-foreground md:grid">
+                  <div>Date</div>
+                  <div>Montant</div>
+                  <div>Notes</div>
+                  <div>Actions</div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="py-8 text-center">
-              <p className="font-medium">Aucun paiement enregistré</p>
 
-              <p className="text-sm text-muted-foreground">
-                Les paiements effectués apparaîtront ici.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                {payments.map((payment) => (
+                  <div
+                    key={payment.id}
+                    className="grid gap-3 border-b pb-4 md:grid-cols-[1fr_160px_1fr_80px] md:gap-4"
+                  >
+                    <div>
+                      <span className="text-sm text-muted-foreground md:hidden">
+                        Date :{" "}
+                      </span>
+
+                      {formatDate(payment.payment_date)}
+                    </div>
+
+                    <div className="font-semibold">
+                      <span className="text-sm text-muted-foreground md:hidden">
+                        Montant :{" "}
+                      </span>
+
+                      {formatCurrency(payment.amount)}
+                    </div>
+
+                    <div className="text-sm text-muted-foreground">
+                      <span className="md:hidden">Notes : </span>
+
+                      {payment.notes ?? "Aucune note"}
+                    </div>
+
+                    <div className="flex items-center">
+                      <DeletePaymentButton paymentId={payment.id} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <p className="font-medium">Aucun paiement enregistré</p>
+
+                <p className="text-sm text-muted-foreground">
+                  Les paiements effectués apparaîtront ici.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Produits */}
 
-      <Card>
+      <Card className="order-3">
         <CardHeader>
           <CardTitle>Produits et services</CardTitle>
         </CardHeader>
