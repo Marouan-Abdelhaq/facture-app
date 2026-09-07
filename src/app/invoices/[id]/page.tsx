@@ -70,6 +70,9 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
         name,
         phone,
         address
+      ),
+      profiles (
+        full_name
       )
     `,
     )
@@ -83,6 +86,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
   const invoice = {
     ...invoiceData,
     clients: invoiceData.clients[0] ?? null,
+    profiles: invoiceData.profiles[0] ?? null,
   };
 
   const { data: items, error: itemsError } = await supabase

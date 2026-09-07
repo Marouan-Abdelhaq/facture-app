@@ -15,6 +15,9 @@ interface InvoicePdfProps {
       phone: string | null;
       address: string | null;
     } | null;
+    profiles: {
+      full_name: string | null;
+    } | null;
   };
 
   items: {
@@ -233,11 +236,9 @@ export function InvoicePdf({ invoice, items }: InvoicePdfProps) {
           {/* ENTREPRISE */}
 
           <View style={styles.companySection}>
-            <Text style={styles.companyName}>MABDELHA</Text>
-
-            {/*  <Text style={styles.companyText}>Travaux Publics</Text>
-
-            <Text style={styles.companyText}>Maroc</Text> */}
+            <Text style={styles.companyName}>
+              {invoice.profiles?.full_name ?? "Utilisateur"}
+            </Text>
           </View>
 
           {/* FACTURE */}
@@ -352,7 +353,8 @@ export function InvoicePdf({ invoice, items }: InvoicePdfProps) {
         {/* FOOTER */}
 
         <Text style={styles.footer}>
-          Merci pour votre confiance — MABDELHA Travaux Publics
+          Merci pour votre confiance —{" "}
+          {invoice.profiles?.full_name ?? "Utilisateur"}
         </Text>
       </Page>
     </Document>

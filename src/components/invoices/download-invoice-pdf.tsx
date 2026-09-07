@@ -34,6 +34,9 @@ interface DownloadInvoicePdfProps {
       phone: string | null;
       address: string | null;
     } | null;
+    profiles: {
+      full_name: string | null;
+    } | null;
   };
 
   items: {
