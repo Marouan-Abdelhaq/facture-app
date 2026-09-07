@@ -121,7 +121,10 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
     );
   }
 
-  const userName = profile?.full_name?.trim() || user.email || "Mon Cahier";
+  const userName =
+    profile?.full_name?.trim() ||
+    user.user_metadata?.full_name?.trim() ||
+    "Utilisateur";
 
   const { data: items, error: itemsError } = await supabase
     .from("invoice_items")
