@@ -217,7 +217,10 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-8 pb-[calc(var(--mobile-nav-height)+var(--mobile-actions-height)+1rem)] sm:pb-0"
+    >
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
@@ -283,23 +286,16 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
 
       {/* Produits */}
 
-      <div className="space-y-6 rounded-xl border bg-card p-4 sm:p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold">Produits et services</h3>
+      <div className="rounded-xl border bg-card p-4 sm:p-6">
+        <div className="sticky top-0 z-10 -mx-1 mb-4 border-b bg-card px-1 pb-4 sm:mb-6">
+          <h3 className="font-semibold">Produits et services</h3>
 
-            <p className="text-sm text-muted-foreground">
-              Ajoutez les éléments de votre facture.
-            </p>
-          </div>
-
-          <Button type="button" variant="outline" onClick={addItem}>
-            <Plus className="mr-2 size-4" />
-            Ajouter une ligne
-          </Button>
+          <p className="text-sm text-muted-foreground">
+            Ajoutez les éléments de votre facture.
+          </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="max-h-[38vh] space-y-4 overflow-y-auto overscroll-contain pr-2 sm:max-h-[45vh] md:max-h-[55vh]">
           {itemsList.map((item, index) => {
             const itemTotal = item.quantity * item.unit_price;
 
@@ -355,20 +351,43 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
           })}
         </div>
 
-        {/* Total */}
+        {/* Total et ajout de ligne */}
 
-        <div className="flex justify-end border-t pt-6">
+        <div className="mt-4 flex flex-col gap-4 border-t pt-4 sm:mt-6 sm:flex-row sm:items-center sm:justify-between sm:pt-6">
           <div className="text-right">
             <p className="text-sm text-muted-foreground">Total de la facture</p>
 
             <p className="text-2xl font-bold">{formatCurrency(totalAmount)}</p>
           </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={addItem}
+            className="w-full sm:w-auto"
+          >
+            <Plus className="mr-2 size-4" />
+            Ajouter une ligne
+          </Button>
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Actions mobile */}
 
-      <div className="sticky bottom-20 z-10 -mx-1 flex justify-end gap-3 border-t bg-background/95 py-3 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:py-0">
+      <div className="fixed inset-x-0 bottom-[var(--mobile-nav-height)] z-30 flex h-[var(--mobile-actions-height)] items-center justify-end gap-3 border-t bg-background/95 px-4 backdrop-blur-md md:hidden">
+        <Button type="button" variant="outline" onClick={() => router.back()}>
+          <ArrowLeft className="mr-2 size-4" />
+          Annuler
+        </Button>
+
+        <Button type="submit" disabled={loading}>
+          {loading ? "Création..." : "Créer la facture"}
+        </Button>
+      </div>
+
+      {/* Actions desktop */}
+
+      <div className="hidden justify-end gap-3 md:flex">
         <Button type="button" variant="outline" onClick={() => router.back()}>
           <ArrowLeft className="mr-2 size-4" />
           Annuler

@@ -81,6 +81,9 @@
   --sidebar-accent-foreground: #1e3a5f;
   --sidebar-border: #d6cebf;
   --sidebar-ring: #1e3a5f;
+  --mobile-nav-height: calc(3.5rem + max(0.5rem, env(safe-area-inset-bottom)));
+
+  --mobile-actions-height: 4.5rem;
 }
 
 .dark {
