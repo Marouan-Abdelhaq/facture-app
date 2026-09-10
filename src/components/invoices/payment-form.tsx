@@ -40,6 +40,19 @@ export function PaymentForm({ invoiceId, remainingAmount }: PaymentFormProps) {
       return;
     }
 
+    if (paymentAmount > remainingAmount) {
+      setError(
+        `Le montant ne peut pas dépasser le reste à payer (${new Intl.NumberFormat(
+          "fr-MA",
+          {
+            style: "currency",
+            currency: "MAD",
+          },
+        ).format(remainingAmount)}).`,
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -61,11 +74,13 @@ export function PaymentForm({ invoiceId, remainingAmount }: PaymentFormProps) {
 
       router.refresh();
     } catch (error) {
-      console.error(error);
+      console.error("Erreur lors de l'ajout du paiement:", error);
 
-      setError(
-        error instanceof Error ? error.message : "Une erreur est survenue.",
-      );
+      if (error && typeof error === "object" && "message" in error) {
+        setError(String(error.message));
+      } else {
+        setError("Impossible d'enregistrer le paiement.");
+      }
     } finally {
       setLoading(false);
     }
