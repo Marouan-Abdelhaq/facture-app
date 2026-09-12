@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 import { useRouter } from "next/navigation";
+import { Smartphone } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 
@@ -13,6 +14,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { Textarea } from "@/components/ui/textarea";
+
+interface ContactPickerContact {
+  name?: string[];
+  tel?: string[];
+}
+
+interface ContactsManager {
+  select(
+    properties: string[],
+    options?: { multiple?: boolean },
+  ): Promise<ContactPickerContact[]>;
+}
+
+function getContactsManager(): ContactsManager | null {
+  if (typeof navigator === "undefined") {
+    return null;
+  }
+
+  return (
+    (navigator as Navigator & { contacts?: ContactsManager }).contacts ?? null
+  );
+}
 
 export function ClientForm() {
   const router = useRouter();
@@ -25,9 +48,54 @@ export function ClientForm() {
 
   const [notes, setNotes] = useState("");
 
+  const [contactsLoading, setContactsLoading] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState("");
+
+  const contactsSupported = useSyncExternalStore(
+    () => () => undefined,
+    () => getContactsManager() !== null,
+    () => false,
+  );
+
+  async function handleImportContact() {
+    const contactsManager = getContactsManager();
+
+    if (!contactsManager) {
+      return;
+    }
+
+    setContactsLoading(true);
+    setError("");
+
+    try {
+      const contacts = await contactsManager.select(["name", "tel"], {
+        multiple: false,
+      });
+      const contact = contacts[0];
+      const contactName = contact?.name?.[0]?.trim();
+      const contactPhone = contact?.tel?.[0]?.trim();
+
+      if (contactName) {
+        setName(contactName);
+      }
+
+      if (contactPhone) {
+        setPhone(contactPhone);
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      console.error("Erreur lors de l'import du contact:", error);
+      setError("Impossible d'importer ce contact.");
+    } finally {
+      setContactsLoading(false);
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -117,6 +185,21 @@ export function ClientForm() {
           placeholder="Exemple : 0612345678"
         />
       </div>
+
+      {contactsSupported && (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={handleImportContact}
+          disabled={contactsLoading}
+        >
+          <Smartphone className="size-4" />
+          {contactsLoading
+            ? "Ouverture des contacts..."
+            : "Importer depuis mes contacts"}
+        </Button>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="address">Adresse</Label>
