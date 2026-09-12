@@ -32,9 +32,13 @@ function getContactsManager(): ContactsManager | null {
     return null;
   }
 
-  return (
-    (navigator as Navigator & { contacts?: ContactsManager }).contacts ?? null
-  );
+  const contacts = (
+    navigator as Navigator & { contacts?: Partial<ContactsManager> }
+  ).contacts;
+
+  return contacts && typeof contacts.select === "function"
+    ? (contacts as ContactsManager)
+    : null;
 }
 
 export function ClientForm() {
