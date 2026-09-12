@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ComponentType } from "react";
-import { Download } from "lucide-react";
+import {
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type ComponentType,
+} from "react";
+import { Download, Share2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,12 +17,11 @@ interface InvoicePdfProps {
 }
 
 type InvoicePdfComponent = ComponentType<InvoicePdfProps>;
-type PdfDownloadLinkComponent =
-  typeof import("@react-pdf/renderer").PDFDownloadLink;
+type PdfFunction = typeof import("@react-pdf/renderer").pdf;
 
 interface LoadedPdfComponents {
   invoicePdf: InvoicePdfComponent;
-  pdfDownloadLink: PdfDownloadLinkComponent;
+  pdf: PdfFunction;
 }
 
 interface DownloadInvoicePdfProps {
@@ -47,6 +51,49 @@ interface DownloadInvoicePdfProps {
   }[];
 }
 
+function sanitizeFileName(value: string, fallback: string) {
+  const sanitized = value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return sanitized || fallback;
+}
+
+function getPdfFileName(invoice: DownloadInvoicePdfProps["invoice"]) {
+  const invoiceNumber = sanitizeFileName(invoice.invoice_number, "Sans-numero");
+  const clientName = sanitizeFileName(
+    invoice.clients?.name ?? "",
+    "Client-inconnu",
+  );
+
+  return `Facture_${invoiceNumber}_${clientName}.pdf`;
+}
+
+function canSharePdfFiles() {
+  if (
+    typeof navigator === "undefined" ||
+    typeof navigator.share !== "function" ||
+    typeof navigator.canShare !== "function"
+  ) {
+    return false;
+  }
+
+  try {
+    return navigator.canShare({
+      files: [
+        new File([""], "facture.pdf", {
+          type: "application/pdf",
+        }),
+      ],
+    });
+  } catch {
+    return false;
+  }
+}
+
 export function DownloadInvoicePdf({
   invoice,
   items,
@@ -54,6 +101,14 @@ export function DownloadInvoicePdf({
 }: DownloadInvoicePdfProps) {
   const [pdfComponents, setPdfComponents] =
     useState<LoadedPdfComponents | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+
+  const shareSupported = useSyncExternalStore(
+    () => () => undefined,
+    canSharePdfFiles,
+    () => false,
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -68,7 +123,7 @@ export function DownloadInvoicePdf({
 
       setPdfComponents({
         invoicePdf: invoicePdfModule.InvoicePdf,
-        pdfDownloadLink: renderer.PDFDownloadLink,
+        pdf: renderer.pdf,
       });
     });
 
@@ -86,23 +141,97 @@ export function DownloadInvoicePdf({
     );
   }
 
-  const { invoicePdf: InvoicePdf, pdfDownloadLink: PDFDownloadLink } =
-    pdfComponents;
+  const { invoicePdf: InvoicePdf, pdf } = pdfComponents;
+  const fileName = getPdfFileName(invoice);
+
+  async function getPdfBlob() {
+    if (pdfBlob) {
+      return pdfBlob;
+    }
+
+    const blob = await pdf(
+      <InvoicePdf invoice={invoice} items={items} userName={userName} />,
+    ).toBlob();
+
+    setPdfBlob(blob);
+    return blob;
+  }
+
+  async function handleDownload() {
+    setLoading(true);
+
+    try {
+      const blob = await getPdfBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Erreur lors de la génération du PDF:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleShare() {
+    if (!shareSupported) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const blob = await getPdfBlob();
+      const file = new File([blob], fileName, {
+        type: "application/pdf",
+      });
+
+      if (!navigator.share || !navigator.canShare?.({ files: [file] })) {
+        return;
+      }
+
+      await navigator.share({
+        title: `Facture ${invoice.invoice_number}`,
+        text: `Voici votre facture ${invoice.invoice_number}`,
+        files: [file],
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      console.error("Erreur lors du partage du PDF:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <PDFDownloadLink
-      document={
-        <InvoicePdf invoice={invoice} items={items} userName={userName} />
-      }
-      fileName={`facture-${invoice.invoice_number}.pdf`}
-    >
-      {({ loading }) => (
-        <Button type="button" variant="outline" disabled={loading}>
-          <Download className="mr-2 size-4" />
+    <div className="flex flex-wrap gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleDownload}
+        disabled={loading}
+      >
+        <Download className="size-4" />
+        {loading ? "Préparation du PDF..." : "Télécharger PDF"}
+      </Button>
 
-          {loading ? "Préparation du PDF..." : "Télécharger le PDF"}
+      {shareSupported && (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleShare}
+          disabled={loading}
+        >
+          <Share2 className="size-4" />
+          Partager
         </Button>
       )}
-    </PDFDownloadLink>
+    </div>
   );
 }
