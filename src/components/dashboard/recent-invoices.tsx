@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-import { Badge } from "@/components/ui/badge";
+import { InvoiceCard } from "@/components/invoices/invoice-card";
+import { EmptyState } from "@/components/layout/empty-state";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatCurrency } from "@/lib/format";
 
 interface Invoice {
   id: string;
@@ -22,92 +23,63 @@ interface RecentInvoicesProps {
   invoices: Invoice[];
 }
 
-function formatCurrency(amount: string) {
-  return new Intl.NumberFormat("fr-MA", {
-    style: "currency",
-    currency: "MAD",
-    maximumFractionDigits: 2,
-  }).format(Number(amount));
-}
-
-function getStatusLabel(status: string) {
-  const labels: Record<string, string> = {
-    draft: "Brouillon",
-    unpaid: "Non payée",
-    partial: "Partielle",
-    paid: "Payée",
-    overpaid: "À rembourser",
-    cancelled: "Annulée",
-  };
-
-  return labels[status] ?? status;
-}
-
 export function RecentInvoices({ invoices }: RecentInvoicesProps) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between border-b border-border/80 pb-4">
-        <div>
-          <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#c94c4c]">
-            Registre des factures
-          </p>
-          <CardTitle className="text-xl text-primary">
-            Factures récentes
-          </CardTitle>
-        </div>
-
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold">Factures récentes</h2>
         <Link
           href="/invoices"
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="text-sm font-medium text-primary hover:underline"
         >
           Voir toutes
-          <ArrowRight className="size-4" />
         </Link>
-      </CardHeader>
+      </div>
 
-      <CardContent>
-        {invoices.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 text-center">
-            <FileText className="mb-3 size-10 text-muted-foreground" />
-
-            <p className="font-medium">Aucune facture</p>
-
-            <p className="text-sm text-muted-foreground">
-              Vos factures apparaîtront ici.
-            </p>
+      {invoices.length === 0 ? (
+        <EmptyState
+          icon={<FileText className="size-8" />}
+          title="Aucune facture"
+          description="Vos factures apparaîtront ici."
+        />
+      ) : (
+        <>
+          <div className="space-y-3 md:hidden">
+            {invoices.map((invoice) => (
+              <InvoiceCard
+                key={invoice.id}
+                id={invoice.id}
+                invoiceNumber={invoice.invoice_number}
+                clientName={invoice.clients?.name ?? "Client inconnu"}
+                invoiceDate={invoice.invoice_date}
+                totalAmount={invoice.total_amount}
+                status={invoice.status}
+              />
+            ))}
           </div>
-        ) : (
-          <div className="divide-y divide-border/80">
+
+          <div className="hidden overflow-hidden rounded-xl border border-border bg-card md:block">
             {invoices.map((invoice) => (
               <Link
                 key={invoice.id}
                 href={`/invoices/${invoice.id}`}
-                className="flex items-center justify-between gap-4 px-2 py-4 transition-colors hover:bg-muted/50 sm:px-3"
+                className="flex items-center justify-between gap-4 border-b border-border px-5 py-4 last:border-b-0 hover:bg-muted/40"
               >
-                <div>
-                  <p className="font-semibold text-primary">
-                    {invoice.invoice_number}
-                  </p>
-
-                  <p className="text-sm text-muted-foreground">
+                <div className="min-w-0">
+                  <p className="font-medium">{invoice.invoice_number}</p>
+                  <p className="truncate text-sm text-muted-foreground">
                     {invoice.clients?.name ?? "Client inconnu"}
                   </p>
                 </div>
-
-                <div className="flex items-center gap-3 sm:gap-6">
-                  <p className="font-medium">
-                    {formatCurrency(invoice.total_amount)}
-                  </p>
-
-                  <Badge variant="secondary">
-                    {getStatusLabel(invoice.status)}
-                  </Badge>
+                <div className="flex items-center gap-6">
+                  <p className="font-medium">{formatCurrency(invoice.total_amount)}</p>
+                  <StatusBadge status={invoice.status} />
                 </div>
               </Link>
             ))}
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </>
+      )}
+    </section>
   );
 }

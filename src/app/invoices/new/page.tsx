@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { InvoiceForm } from "@/components/invoices/invoice-form";
+import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default async function NewInvoicePage() {
   const supabase = await createClient();
@@ -10,7 +12,7 @@ export default async function NewInvoicePage() {
 
   if (!user) {
     return (
-      <div className="rounded-lg border p-6">
+      <div className="rounded-xl border p-6">
         <h2 className="font-semibold">Utilisateur non authentifié</h2>
       </div>
     );
@@ -24,11 +26,10 @@ export default async function NewInvoicePage() {
 
   if (clientsError) {
     return (
-      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
+      <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-6">
         <h2 className="font-semibold text-destructive">
           Erreur lors du chargement
         </h2>
-
         <p className="mt-2 text-sm text-muted-foreground">
           {clientsError.message}
         </p>
@@ -37,16 +38,9 @@ export default async function NewInvoicePage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Nouvelle facture</h2>
-
-        <p className="text-muted-foreground">
-          Créez une nouvelle facture pour un client.
-        </p>
-      </div>
-
+    <PageContainer>
+      <PageHeader description="Créez une nouvelle facture pour un client." />
       <InvoiceForm clients={clients ?? []} />
-    </div>
+    </PageContainer>
   );
 }

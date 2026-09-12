@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-
 import Link from "next/link";
-
 import { Search } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { InvoiceCard } from "@/components/invoices/invoice-card";
+import { EmptyState } from "@/components/layout/empty-state";
 import { Input } from "@/components/ui/input";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatCurrency, formatDate } from "@/lib/format";
 
 interface Invoice {
   id: string;
@@ -18,7 +19,6 @@ interface Invoice {
   paid_amount: string;
   remaining_amount: string;
   refund_amount: string;
-
   clients: {
     name: string;
   } | null;
@@ -28,65 +28,22 @@ interface InvoicesListProps {
   invoices: Invoice[];
 }
 
-function formatCurrency(amount: number | string) {
-  return new Intl.NumberFormat("fr-MA", {
-    style: "currency",
-    currency: "MAD",
-    maximumFractionDigits: 2,
-  }).format(Number(amount));
-}
-
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("fr-MA", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(date));
-}
-
-function getStatusLabel(status: string) {
-  const labels: Record<string, string> = {
-    draft: "Brouillon",
-    unpaid: "Non payée",
-    partial: "Partielle",
-    paid: "Payée",
-    overpaid: "À rembourser",
-    cancelled: "Annulée",
-  };
-
-  return labels[status] ?? status;
-}
-
 export function InvoicesList({ invoices }: InvoicesListProps) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
 
   const filteredInvoices = invoices.filter((invoice) => {
-    /*
-     * Recherche
-     */
-
     const searchValue = search.toLowerCase();
 
     const matchesSearch =
       invoice.invoice_number.toLowerCase().includes(searchValue) ||
       (invoice.clients?.name ?? "").toLowerCase().includes(searchValue);
 
-    /*
-     * Statut
-     */
-
     const matchesStatus = status === "all" || invoice.status === status;
 
-    /*
-     * Date
-     */
-
     const invoiceDate = new Date(invoice.invoice_date);
-
     const today = new Date();
-
     let matchesDate = true;
 
     if (dateFilter === "today") {
@@ -95,15 +52,10 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
 
     if (dateFilter === "week") {
       const startOfWeek = new Date(today);
-
       const day = today.getDay();
-
       const diff = day === 0 ? -6 : 1 - day;
-
       startOfWeek.setDate(today.getDate() + diff);
-
       startOfWeek.setHours(0, 0, 0, 0);
-
       matchesDate = invoiceDate >= startOfWeek;
     }
 
@@ -115,7 +67,6 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
 
     if (dateFilter === "last_month") {
       const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-
       matchesDate =
         invoiceDate.getMonth() === lastMonth.getMonth() &&
         invoiceDate.getFullYear() === lastMonth.getFullYear();
@@ -129,139 +80,120 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Recherche */}
-
+    <div className="space-y-4">
       <div className="relative">
-        <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
-
+        <Search className="absolute top-3.5 left-3 size-4 text-muted-foreground md:top-3" />
         <Input
           placeholder="Rechercher une facture ou un client..."
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           className="pl-10"
+          aria-label="Rechercher une facture"
         />
       </div>
 
-      {/* Filtres */}
-
-      <div className="flex flex-col gap-4 sm:flex-row">
-        {/* Statut */}
-
+      <div className="grid gap-3 sm:grid-cols-2">
         <select
           value={status}
           onChange={(event) => setStatus(event.target.value)}
-          className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm md:h-10 sm:w-[220px]"
+          className="flex h-11 w-full rounded-xl border border-input bg-card px-3 py-2 text-sm md:h-10"
+          aria-label="Filtrer par statut"
         >
           <option value="all">Tous les statuts</option>
-
           <option value="paid">Payée</option>
-
-          <option value="partial">Partielle</option>
-
+          <option value="partial">Partiellement payée</option>
           <option value="unpaid">Non payée</option>
-
-          <option value="overpaid">À rembourser</option>
-
+          <option value="overpaid">Trop payée</option>
           <option value="cancelled">Annulée</option>
         </select>
-
-        {/* Date */}
 
         <select
           value={dateFilter}
           onChange={(event) => setDateFilter(event.target.value)}
-          className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm md:h-10 sm:w-[220px]"
+          className="flex h-11 w-full rounded-xl border border-input bg-card px-3 py-2 text-sm md:h-10"
+          aria-label="Filtrer par date"
         >
           <option value="all">Toutes les dates</option>
-
           <option value="today">Aujourd&apos;hui</option>
-
           <option value="week">Cette semaine</option>
-
           <option value="month">Ce mois</option>
-
           <option value="last_month">Le mois dernier</option>
-
           <option value="year">Cette année</option>
         </select>
       </div>
 
-      {/* Résultats */}
+      <p className="text-sm text-muted-foreground">
+        {filteredInvoices.length} facture(s)
+      </p>
 
-      <div>
-        <p className="mb-4 text-sm text-muted-foreground">
-          {filteredInvoices.length} facture(s) trouvée(s)
-        </p>
-
-        {filteredInvoices.length > 0 ? (
-          <div className="space-y-3">
+      {filteredInvoices.length > 0 ? (
+        <>
+          <div className="space-y-3 md:hidden">
             {filteredInvoices.map((invoice) => (
-              <Link
+              <InvoiceCard
                 key={invoice.id}
-                href={`/invoices/${invoice.id}`}
-                className="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-sm transition hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between sm:p-5"
-              >
-                {/* Informations */}
-
-                <div>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-primary">
-                      {invoice.invoice_number}
-                    </p>
-
-                    <Badge variant="secondary" className="sm:hidden">
-                      {getStatusLabel(invoice.status)}
-                    </Badge>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground">
-                    {invoice.clients?.name ?? "Client inconnu"}
-                  </p>
-
-                  <p className="text-sm text-muted-foreground">
-                    {formatDate(invoice.invoice_date)}
-                  </p>
-                </div>
-
-                {/* Montant + Statut */}
-
-                <div className="flex items-center gap-6">
-                  <div className="flex gap-6 sm:block sm:text-right">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total</p>
-
-                      <p className="font-semibold">
-                        {formatCurrency(invoice.total_amount)}
-                      </p>
-                    </div>
-
-                    <div className="sm:mt-2">
-                      <p className="text-sm text-muted-foreground">Restant</p>
-
-                      <p className="font-medium">
-                        {formatCurrency(invoice.remaining_amount)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <Badge variant="secondary" className="hidden sm:inline-flex">
-                    {getStatusLabel(invoice.status)}
-                  </Badge>
-                </div>
-              </Link>
+                id={invoice.id}
+                invoiceNumber={invoice.invoice_number}
+                clientName={invoice.clients?.name ?? "Client inconnu"}
+                invoiceDate={invoice.invoice_date}
+                totalAmount={invoice.total_amount}
+                status={invoice.status}
+              />
             ))}
           </div>
-        ) : (
-          <div className="rounded-lg border py-12 text-center">
-            <p className="font-medium">Aucune facture trouvée</p>
 
-            <p className="mt-1 text-sm text-muted-foreground">
-              Essayez de modifier votre recherche ou vos filtres.
-            </p>
+          <div className="hidden overflow-hidden rounded-xl border border-border bg-card md:block">
+            <table className="w-full text-sm">
+              <thead className="border-b bg-muted/40 text-left text-muted-foreground">
+                <tr>
+                  <th className="px-5 py-3 font-medium">Numéro</th>
+                  <th className="px-5 py-3 font-medium">Client</th>
+                  <th className="px-5 py-3 font-medium">Date</th>
+                  <th className="px-5 py-3 font-medium">Montant</th>
+                  <th className="px-5 py-3 font-medium">Statut</th>
+                  <th className="px-5 py-3 font-medium">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredInvoices.map((invoice) => (
+                  <tr key={invoice.id} className="border-b last:border-b-0">
+                    <td className="px-5 py-3 font-medium">
+                      {invoice.invoice_number}
+                    </td>
+                    <td className="px-5 py-3">
+                      {invoice.clients?.name ?? "Client inconnu"}
+                    </td>
+                    <td className="px-5 py-3 text-muted-foreground">
+                      {formatDate(invoice.invoice_date)}
+                    </td>
+                    <td className="px-5 py-3 font-medium">
+                      {formatCurrency(invoice.total_amount)}
+                    </td>
+                    <td className="px-5 py-3">
+                      <StatusBadge status={invoice.status} />
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <Link
+                        href={`/invoices/${invoice.id}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        Voir
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+        </>
+      ) : (
+        <EmptyState
+          title="Aucune facture trouvée"
+          description="Essayez de modifier votre recherche ou vos filtres."
+        />
+      )}
     </div>
   );
 }

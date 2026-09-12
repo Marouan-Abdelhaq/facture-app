@@ -1,17 +1,20 @@
 "use client";
 
 import { useState } from "react";
-
 import { useRouter } from "next/navigation";
 
-import { Plus, Trash2, ArrowLeft } from "lucide-react";
-
 import { createClient } from "@/lib/supabase/client";
+import { formatCurrency } from "@/lib/format";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { MobileActionBar } from "@/components/layout/mobile-action-bar";
+import {
+  InvoiceItemsEditor,
+  type InvoiceItemDraft,
+} from "@/components/invoices/invoice-items-editor";
 
 interface Client {
   id: string;
@@ -19,17 +22,11 @@ interface Client {
   phone: string | null;
 }
 
-interface InvoiceItem {
-  product_name: string;
-  quantity: number;
-  unit_price: number;
-}
-
 interface InvoiceFormProps {
   clients: Client[];
 }
 
-function createEmptyItem(): InvoiceItem {
+function createEmptyItem(): InvoiceItemDraft {
   return {
     product_name: "",
     quantity: 1,
@@ -41,34 +38,25 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
   const router = useRouter();
 
   const [clientId, setClientId] = useState("");
-
   const [invoiceDate, setInvoiceDate] = useState(
     new Date().toISOString().split("T")[0],
   );
-
   const [notes, setNotes] = useState("");
-
-  const [itemsList, setItemsList] = useState<InvoiceItem[]>([
+  const [itemsList, setItemsList] = useState<InvoiceItemDraft[]>([
     createEmptyItem(),
   ]);
-
   const [loading, setLoading] = useState(false);
-
   const [error, setError] = useState("");
 
   const totalAmount = itemsList.reduce((total, item) => {
     return total + item.quantity * item.unit_price;
   }, 0);
 
-  function formatCurrency(amount: number) {
-    return new Intl.NumberFormat("fr-MA", {
-      style: "currency",
-      currency: "MAD",
-      maximumFractionDigits: 2,
-    }).format(amount);
-  }
-
-  function updateItem(index: number, field: keyof InvoiceItem, value: string) {
+  function updateItem(
+    index: number,
+    field: keyof InvoiceItemDraft,
+    value: string,
+  ) {
     setItemsList((currentItems) =>
       currentItems.map((item, itemIndex) => {
         if (itemIndex !== index) {
@@ -122,9 +110,6 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
     try {
       const supabase = createClient();
 
-      /*
-       * Récupérer l'utilisateur connecté
-       */
       const {
         data: { user },
         error: userError,
@@ -137,28 +122,17 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
         );
       }
 
-      /*
-       * 1. Créer la facture
-       */
       const { data: invoice, error: invoiceError } = await supabase
         .from("invoices")
         .insert({
           user_id: user.id,
-
           client_id: clientId,
-
           invoice_date: invoiceDate,
-
           notes: notes || null,
-
           total_amount: 0,
-
           paid_amount: 0,
-
           remaining_amount: 0,
-
           refund_amount: 0,
-
           status: "draft",
         })
         .select()
@@ -168,18 +142,11 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
         throw invoiceError;
       }
 
-      /*
-       * 2. Créer les lignes de facture
-       */
       const invoiceItems = itemsList.map((item) => ({
         invoice_id: invoice.id,
-
         product_name: item.product_name,
-
         quantity: item.quantity,
-
         unit_price: item.unit_price,
-
         total_amount: item.quantity * item.unit_price,
       }));
 
@@ -191,19 +158,7 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
         throw itemsError;
       }
 
-      /*
-       * Les triggers recalculent automatiquement :
-       *
-       * total_amount
-       * remaining_amount
-       * status
-       */
-
-      /*
-       * 3. Aller vers la facture
-       */
       router.push(`/invoices/${invoice.id}`);
-
       router.refresh();
     } catch (error) {
       console.error(error);
@@ -217,50 +172,37 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-8 pb-[calc(var(--mobile-nav-height)+var(--mobile-actions-height)+1rem)] sm:pb-0"
-    >
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      {/* Informations facture */}
+      <section className="space-y-4 rounded-xl border border-border bg-card p-4 md:p-6">
+        <h2 className="text-xl font-semibold">Informations</h2>
 
-      <div className="space-y-6 rounded-xl border bg-card p-4 sm:p-6">
-        <h3 className="font-semibold">Informations de la facture</h3>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Client */}
-
+        <div className="grid gap-4 md:grid-cols-2 md:gap-6">
           <div className="space-y-2">
             <Label htmlFor="client">Client</Label>
-
             <select
               id="client"
               value={clientId}
               onChange={(event) => setClientId(event.target.value)}
-              className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm md:h-10"
+              className="flex h-11 w-full rounded-xl border border-input bg-card px-3 py-2 text-sm md:h-10"
             >
               <option value="">Sélectionner un client</option>
-
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name}
-
                   {client.phone ? ` - ${client.phone}` : ""}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Date */}
-
           <div className="space-y-2">
             <Label htmlFor="invoice-date">Date</Label>
-
             <Input
               id="invoice-date"
               type="date"
@@ -270,11 +212,8 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
           </div>
         </div>
 
-        {/* Notes */}
-
         <div className="space-y-2">
           <Label htmlFor="notes">Notes</Label>
-
           <Textarea
             id="notes"
             placeholder="Informations supplémentaires..."
@@ -282,121 +221,44 @@ export function InvoiceForm({ clients }: InvoiceFormProps) {
             onChange={(event) => setNotes(event.target.value)}
           />
         </div>
-      </div>
+      </section>
 
-      {/* Produits */}
+      <section className="space-y-4 rounded-xl border border-border bg-card p-4 md:p-6">
+        <h2 className="text-xl font-semibold">Produits</h2>
+        <InvoiceItemsEditor
+          items={itemsList}
+          onChangeItem={updateItem}
+          onAddItem={addItem}
+          onRemoveItem={removeItem}
+        />
+      </section>
 
-      <div className="rounded-xl border bg-card p-4 sm:p-6">
-        <div className="sticky top-0 z-10 -mx-1 mb-4 border-b bg-card px-1 pb-4 sm:mb-6">
-          <h3 className="font-semibold">Produits et services</h3>
-
-          <p className="text-sm text-muted-foreground">
-            Ajoutez les éléments de votre facture.
-          </p>
+      <section className="hidden items-center justify-between rounded-xl border border-border bg-card p-6 md:flex">
+        <div>
+          <p className="text-sm text-muted-foreground">Total</p>
+          <p className="text-2xl font-semibold">{formatCurrency(totalAmount)}</p>
         </div>
-
-        <div className="max-h-[38vh] space-y-4 overflow-y-auto overscroll-contain pr-2 sm:max-h-[45vh] md:max-h-[55vh]">
-          {itemsList.map((item, index) => {
-            const itemTotal = item.quantity * item.unit_price;
-
-            return (
-              <div
-                key={index}
-                className="grid gap-4 rounded-lg border p-4 md:grid-cols-[1fr_120px_160px_140px_40px]"
-              >
-                <Input
-                  placeholder="Produit ou service"
-                  value={item.product_name}
-                  onChange={(event) =>
-                    updateItem(index, "product_name", event.target.value)
-                  }
-                />
-
-                <Input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={item.quantity}
-                  onChange={(event) =>
-                    updateItem(index, "quantity", event.target.value)
-                  }
-                />
-
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Prix"
-                  value={item.unit_price}
-                  onChange={(event) =>
-                    updateItem(index, "unit_price", event.target.value)
-                  }
-                />
-
-                <div className="flex items-center justify-end font-semibold">
-                  {formatCurrency(itemTotal)}
-                </div>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  disabled={itemsList.length === 1}
-                  onClick={() => removeItem(index)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Total et ajout de ligne */}
-
-        <div className="mt-4 flex flex-col gap-4 border-t pt-4 sm:mt-6 sm:flex-row sm:items-center sm:justify-between sm:pt-6">
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Total de la facture</p>
-
-            <p className="text-2xl font-bold">{formatCurrency(totalAmount)}</p>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={addItem}
-            className="w-full sm:w-auto"
-          >
-            <Plus className="mr-2 size-4" />
-            Ajouter une ligne
+        <div className="flex gap-3">
+          <Button type="button" variant="ghost" onClick={() => router.back()}>
+            Annuler
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Création..." : "Créer la facture"}
           </Button>
         </div>
-      </div>
+      </section>
 
-      {/* Actions mobile */}
-
-      <div className="fixed inset-x-0 bottom-[var(--mobile-nav-height)] z-30 flex h-[var(--mobile-actions-height)] items-center justify-end gap-3 border-t bg-background/95 px-4 backdrop-blur-md md:hidden">
-        <Button type="button" variant="outline" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 size-4" />
-          Annuler
-        </Button>
-
-        <Button type="submit" disabled={loading}>
-          {loading ? "Création..." : "Créer la facture"}
-        </Button>
-      </div>
-
-      {/* Actions desktop */}
-
-      <div className="hidden justify-end gap-3 md:flex">
-        <Button type="button" variant="outline" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 size-4" />
-          Annuler
-        </Button>
-
-        <Button type="submit" disabled={loading}>
-          {loading ? "Création..." : "Créer la facture"}
-        </Button>
-      </div>
+      <MobileActionBar>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="text-lg font-semibold">{formatCurrency(totalAmount)}</p>
+          </div>
+          <Button type="submit" disabled={loading} className="min-w-40">
+            {loading ? "Création..." : "Créer la facture"}
+          </Button>
+        </div>
+      </MobileActionBar>
     </form>
   );
 }

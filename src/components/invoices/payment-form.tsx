@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CreditCard } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
+import { formatCurrency } from "@/lib/format";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,18 +95,13 @@ export function PaymentForm({ invoiceId, remainingAmount }: PaymentFormProps) {
         </div>
       )}
 
-      <div className="rounded-xl border bg-card p-6 space-y-6">
+      <div className="space-y-6 rounded-xl border border-border bg-card p-4 md:p-6">
         <div>
-          <h3 className="font-semibold">Ajouter un paiement</h3>
+          <h3 className="text-xl font-semibold">Ajouter un paiement</h3>
 
           <p className="text-sm text-muted-foreground">
             Reste actuellement :{" "}
-            <span className="font-medium">
-              {new Intl.NumberFormat("fr-MA", {
-                style: "currency",
-                currency: "MAD",
-              }).format(remainingAmount)}
-            </span>
+            <span className="font-medium">{formatCurrency(remainingAmount)}</span>
           </p>
         </div>
 

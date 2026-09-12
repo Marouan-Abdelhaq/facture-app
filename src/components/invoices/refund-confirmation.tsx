@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { RotateCcw } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
+import { formatCurrency } from "@/lib/format";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,14 +14,6 @@ import { Label } from "@/components/ui/label";
 interface RefundConfirmationProps {
   invoiceId: string;
   refundAmount: number;
-}
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("fr-MA", {
-    style: "currency",
-    currency: "MAD",
-    maximumFractionDigits: 2,
-  }).format(amount);
 }
 
 export function RefundConfirmation({
@@ -67,7 +60,7 @@ export function RefundConfirmation({
   }
 
   return (
-    <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 space-y-5">
+    <div className="space-y-5 rounded-xl border border-border bg-card p-4 md:p-6">
       <div className="flex items-start gap-4">
         <div className="rounded-full bg-destructive/10 p-3">
           <RotateCcw className="size-5 text-destructive" />

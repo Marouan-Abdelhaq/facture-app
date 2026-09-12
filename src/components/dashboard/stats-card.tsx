@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -20,22 +20,17 @@ export function StatsCard({
 }: StatsCardProps) {
   return (
     <Card className={cn(className)}>
-      <CardContent className="flex items-start justify-between p-4 sm:p-6">
-        <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            {title}
-          </p>
-
-          <p className="text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
+      <CardContent className="flex items-start justify-between">
+        <div className="space-y-1">
+          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="text-2xl font-semibold tracking-tight md:text-[28px] md:leading-8">
             {value}
           </p>
-
-          {description && (
-            <p className="text-xs text-muted-foreground">{description}</p>
-          )}
+          {description ? (
+            <p className="text-xs text-muted-foreground md:text-sm">{description}</p>
+          ) : null}
         </div>
-
-        <div className="border-l border-[#c94c4c]/50 pl-3">{icon}</div>
+        <div className="text-muted-foreground">{icon}</div>
       </CardContent>
     </Card>
   );

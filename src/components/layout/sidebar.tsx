@@ -2,55 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, FileText, Receipt } from "lucide-react";
+import { FileText, LayoutDashboard, Receipt, Users } from "lucide-react";
 
+import { LogoutButton } from "@/components/auth/logout-button";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  {
-    name: "Dashboard",
-    href: "/",
-    icon: LayoutDashboard,
-  },
-  {
-    name: "Clients",
-    href: "/clients",
-    icon: Users,
-  },
-  {
-    name: "Factures",
-    href: "/invoices",
-    icon: FileText,
-  },
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Clients", href: "/clients", icon: Users },
+  { name: "Factures", href: "/invoices", icon: FileText },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex md:h-full">
-      {/* Logo */}
-      <div className="flex h-20 items-center gap-3 border-b border-sidebar-border px-5 md:px-6">
-        <div className="flex size-10 items-center justify-center rounded-sm border border-[#c94c4c]/40 bg-[#1e3a5f] text-[#fffcf5] shadow-[2px_2px_0_rgba(30,58,95,0.12)]">
-          <Receipt className="size-5" />
+    <aside className="hidden w-[var(--sidebar-width)] shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex md:h-full">
+      <div className="flex h-16 items-center gap-3 px-5">
+        <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+          <Receipt className="size-4" aria-hidden="true" />
         </div>
-
         <div>
-          <h1 className="text-xl tracking-wide text-sidebar-foreground">
-            FACTURI
-          </h1>
-
-          <p className="text-[11px] uppercase tracking-[0.18em] text-sidebar-foreground/60">
-            Cahier de facturation
-          </p>
+          <p className="text-sm font-semibold tracking-tight">Mon Cahier</p>
+          <p className="text-xs text-muted-foreground">Facturation</p>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex flex-1 gap-1 overflow-x-auto p-3 md:flex-col md:space-y-1">
+      <nav className="flex flex-1 flex-col gap-1 px-3 py-2" aria-label="Navigation principale">
         {navigation.map((item) => {
           const Icon = item.icon;
-
           const isActive =
             item.href === "/"
               ? pathname === "/"
@@ -61,19 +41,23 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex shrink-0 items-center gap-3 rounded-sm border-l-2 px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? "border-[#c94c4c] bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "border-transparent text-sidebar-foreground/65 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground",
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
+              aria-current={isActive ? "page" : undefined}
             >
-              <Icon className="size-5" />
-
+              <Icon className="size-4" />
               {item.name}
             </Link>
           );
         })}
       </nav>
+
+      <div className="border-t border-sidebar-border p-3">
+        <LogoutButton />
+      </div>
     </aside>
   );
 }

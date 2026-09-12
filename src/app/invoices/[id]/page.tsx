@@ -1,46 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, FileText, Pencil } from "lucide-react";
+import { FileText } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { normalizeRelation } from "@/lib/supabase/relations";
+import { formatCurrency, formatDate } from "@/lib/format";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { PaymentForm } from "@/components/invoices/payment-form";
 import { DeletePaymentButton } from "@/components/payments/delete-payment-button";
-import { DownloadInvoicePdf } from "@/components/invoices/download-invoice-pdf";
 import { RefundConfirmation } from "@/components/invoices/refund-confirmation";
-
-function formatCurrency(amount: number | string) {
-  return new Intl.NumberFormat("fr-MA", {
-    style: "currency",
-    currency: "MAD",
-    maximumFractionDigits: 2,
-  }).format(Number(amount));
-}
-
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("fr-MA", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(date));
-}
-
-function getStatusLabel(status: string) {
-  const labels: Record<string, string> = {
-    draft: "Brouillon",
-    unpaid: "Non payée",
-    partial: "Partielle",
-    paid: "Payée",
-    overpaid: "À rembourser",
-    cancelled: "Annulée",
-  };
-
-  return labels[status] ?? status;
-}
+import { InvoiceDetailActions } from "@/components/invoices/invoice-detail-actions";
+import { PageContainer } from "@/components/layout/page-container";
+import { EmptyState } from "@/components/layout/empty-state";
 
 interface InvoicePageProps {
   params: Promise<{
@@ -50,7 +23,6 @@ interface InvoicePageProps {
 
 export default async function InvoicePage({ params }: InvoicePageProps) {
   const { id } = await params;
-
   const supabase = await createClient();
 
   const {
@@ -89,11 +61,10 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
+      <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-6">
         <h2 className="font-semibold text-destructive">
           Erreur lors du chargement de la facture
         </h2>
-
         <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
       </div>
     );
@@ -144,14 +115,11 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
 
   if (itemsError) {
     return (
-      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
+      <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-6">
         <h2 className="font-semibold text-destructive">
           Erreur lors du chargement
         </h2>
-
-        <p className="mt-2 text-sm text-muted-foreground">
-          {itemsError.message}
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{itemsError.message}</p>
       </div>
     );
   }
@@ -174,11 +142,10 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
 
   if (paymentsError) {
     return (
-      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
+      <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-6">
         <h2 className="font-semibold text-destructive">
           Erreur lors du chargement des paiements
         </h2>
-
         <p className="mt-2 text-sm text-muted-foreground">
           {paymentsError.message}
         </p>
@@ -186,277 +153,190 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
     );
   }
 
+  const showPayment = invoice.status !== "paid" && invoice.status !== "overpaid";
+
   return (
-    <div className="flex flex-col gap-6 sm:gap-8">
-      {/* Header */}
-
-      <div className="order-1 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/invoices">
-              <ArrowLeft className="size-4" />
-            </Link>
-          </Button>
-
-          <div>
-            <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
-              <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
-                Facture {invoice.invoice_number}
-              </h2>
-
-              <Badge variant="secondary">
-                {getStatusLabel(invoice.status)}
-              </Badge>
-            </div>
-
-            <p className="text-muted-foreground">
-              Créée le {formatDate(invoice.invoice_date)}
-            </p>
+    <PageContainer>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-2xl font-semibold md:text-[32px]">
+              Facture {invoice.invoice_number}
+            </h2>
+            <StatusBadge status={invoice.status} />
           </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {formatDate(invoice.invoice_date)}
+          </p>
         </div>
 
-        {/* Modifier */}
-
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <DownloadInvoicePdf
-            invoice={invoice}
-            items={items ?? []}
-            userName={userName}
-          />
-
-          <Button variant="outline" asChild>
-            <Link href={`/invoices/${invoice.id}/edit`}>
-              <Pencil className="mr-2 size-4" />
-              Modifier
-            </Link>
-          </Button>
-        </div>
+        <InvoiceDetailActions
+          invoiceId={invoice.id}
+          showPaymentLink={showPayment}
+          pdf={{
+            userName,
+            invoice,
+            items: items ?? [],
+          }}
+        />
       </div>
 
-      {/* Informations */}
+      <section className="rounded-xl border border-border bg-card p-4 md:p-6">
+        <h3 className="text-xl font-semibold">Client</h3>
+        <p className="mt-3 font-medium">
+          {invoice.clients?.name ?? "Client inconnu"}
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {invoice.clients?.phone ?? "Pas de téléphone"}
+        </p>
+        {invoice.clients?.address ? (
+          <p className="text-sm text-muted-foreground">{invoice.clients.address}</p>
+        ) : null}
+        {invoice.clients?.id ? (
+          <Link
+            href={`/clients/${invoice.clients.id}`}
+            className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
+          >
+            Voir le client
+          </Link>
+        ) : null}
+      </section>
 
-      <div className="order-2 grid gap-4 lg:grid-cols-2 lg:gap-6">
-        {/* Client */}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Client</CardTitle>
-          </CardHeader>
-
-          <CardContent className="space-y-2">
-            <p className="font-semibold">
-              {invoice.clients?.name ?? "Client inconnu"}
-            </p>
-
-            <p className="text-sm text-muted-foreground">
-              {invoice.clients?.phone ?? "Pas de téléphone"}
-            </p>
-
-            <p className="text-sm text-muted-foreground">
-              {invoice.clients?.address ?? "Pas d'adresse"}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Résumé */}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Résumé financier</CardTitle>
-          </CardHeader>
-
-          <CardContent className="space-y-4">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Total</span>
-
-              <span className="font-semibold">
-                {formatCurrency(invoice.total_amount)}
-              </span>
+      <section className="rounded-xl border border-border bg-card p-4 md:p-6">
+        <h3 className="text-xl font-semibold">Produits</h3>
+        {items && items.length > 0 ? (
+          <>
+            <div className="mt-4 space-y-3 md:hidden">
+              {items.map((item) => (
+                <div key={item.id} className="rounded-xl border border-border p-4">
+                  <p className="font-medium">{item.product_name}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {item.quantity} × {formatCurrency(item.unit_price)}
+                  </p>
+                  <p className="mt-2 font-semibold">
+                    {formatCurrency(item.total_amount)}
+                  </p>
+                </div>
+              ))}
             </div>
 
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Montant payé</span>
-
-              <span className="font-semibold">
-                {formatCurrency(invoice.paid_amount)}
-              </span>
+            <div className="mt-4 hidden md:block">
+              <table className="w-full text-sm">
+                <thead className="border-b text-left text-muted-foreground">
+                  <tr>
+                    <th className="py-2 font-medium">Produit</th>
+                    <th className="py-2 font-medium">Quantité</th>
+                    <th className="py-2 font-medium">Prix</th>
+                    <th className="py-2 text-right font-medium">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item) => (
+                    <tr key={item.id} className="border-b last:border-b-0">
+                      <td className="py-3 font-medium">{item.product_name}</td>
+                      <td className="py-3">{item.quantity}</td>
+                      <td className="py-3">{formatCurrency(item.unit_price)}</td>
+                      <td className="py-3 text-right font-semibold">
+                        {formatCurrency(item.total_amount)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Reste à payer</span>
-
-              <span className="font-semibold">
-                {formatCurrency(invoice.remaining_amount)}
-              </span>
-            </div>
-
-            {Number(invoice.refund_amount) > 0 && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">À rembourser</span>
-
-                <span className="font-semibold">
-                  {formatCurrency(invoice.refund_amount)}
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="order-4 space-y-6">
-        {/* Paiement ou remboursement */}
-
-        {invoice.status === "overpaid" ? (
-          <RefundConfirmation
-            invoiceId={invoice.id}
-            refundAmount={Number(invoice.refund_amount)}
+          </>
+        ) : (
+          <EmptyState
+            icon={<FileText className="size-8" />}
+            title="Aucun produit"
           />
-        ) : invoice.status !== "paid" ? (
+        )}
+      </section>
+
+      <section className="rounded-xl border border-border bg-card p-4 md:p-6">
+        <h3 className="text-xl font-semibold">Résumé</h3>
+        <dl className="mt-4 space-y-3 text-sm">
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted-foreground">Total</dt>
+            <dd className="font-semibold">{formatCurrency(invoice.total_amount)}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted-foreground">Payé</dt>
+            <dd className="font-semibold">{formatCurrency(invoice.paid_amount)}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted-foreground">Restant</dt>
+            <dd className="font-semibold">
+              {formatCurrency(invoice.remaining_amount)}
+            </dd>
+          </div>
+          {Number(invoice.refund_amount) > 0 ? (
+            <div className="flex justify-between gap-4">
+              <dt className="text-muted-foreground">À rembourser</dt>
+              <dd className="font-semibold">
+                {formatCurrency(invoice.refund_amount)}
+              </dd>
+            </div>
+          ) : null}
+        </dl>
+      </section>
+
+      {invoice.status === "overpaid" ? (
+        <RefundConfirmation
+          invoiceId={invoice.id}
+          refundAmount={Number(invoice.refund_amount)}
+        />
+      ) : showPayment ? (
+        <div id="ajouter-paiement">
           <PaymentForm
             invoiceId={invoice.id}
             remainingAmount={Number(invoice.remaining_amount)}
           />
-        ) : null}
+        </div>
+      ) : null}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Historique des paiements</CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            {payments && payments.length > 0 ? (
-              <div className="space-y-4">
-                <div className="hidden grid-cols-[1fr_160px_1fr_80px] gap-4 border-b pb-3 text-sm font-medium text-muted-foreground md:grid">
-                  <div>Date</div>
-                  <div>Montant</div>
-                  <div>Notes</div>
-                  <div>Actions</div>
-                </div>
-
-                {payments.map((payment) => (
-                  <div
-                    key={payment.id}
-                    className="grid gap-3 border-b pb-4 md:grid-cols-[1fr_160px_1fr_80px] md:gap-4"
-                  >
-                    <div>
-                      <span className="text-sm text-muted-foreground md:hidden">
-                        Date :{" "}
-                      </span>
-
-                      {formatDate(payment.payment_date)}
-                    </div>
-
-                    <div className="font-semibold">
-                      <span className="text-sm text-muted-foreground md:hidden">
-                        Montant :{" "}
-                      </span>
-
-                      {formatCurrency(payment.amount)}
-                    </div>
-
-                    <div className="text-sm text-muted-foreground">
-                      <span className="md:hidden">Notes : </span>
-
-                      {payment.notes ?? "Aucune note"}
-                    </div>
-
-                    <div className="flex items-center">
-                      <DeletePaymentButton paymentId={payment.id} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-8 text-center">
-                <p className="font-medium">Aucun paiement enregistré</p>
-
-                <p className="text-sm text-muted-foreground">
-                  Les paiements effectués apparaîtront ici.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Produits */}
-
-      <Card className="order-3">
+      <Card>
         <CardHeader>
-          <CardTitle>Produits et services</CardTitle>
+          <CardTitle>Historique des paiements</CardTitle>
         </CardHeader>
-
         <CardContent>
-          {items && items.length > 0 ? (
-            <div className="space-y-4">
-              <div className="hidden grid-cols-[1fr_120px_160px_160px] gap-4 border-b pb-3 text-sm font-medium text-muted-foreground md:grid">
-                <div>Produit</div>
-
-                <div>Quantité</div>
-
-                <div>Prix unitaire</div>
-
-                <div className="text-right">Total</div>
-              </div>
-
-              {items.map((item) => (
+          {payments && payments.length > 0 ? (
+            <div className="space-y-3">
+              {payments.map((payment) => (
                 <div
-                  key={item.id}
-                  className="grid gap-2 border-b pb-4 md:grid-cols-[1fr_120px_160px_160px] md:gap-4 md:border-0 md:pb-0"
+                  key={payment.id}
+                  className="flex items-start justify-between gap-3 rounded-xl border border-border p-4 md:items-center"
                 >
                   <div>
-                    <p className="font-medium">{item.product_name}</p>
+                    <p className="font-semibold">{formatCurrency(payment.amount)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(payment.payment_date)}
+                    </p>
+                    {payment.notes ? (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {payment.notes}
+                      </p>
+                    ) : null}
                   </div>
-
-                  <div className="text-sm">
-                    <span className="text-muted-foreground md:hidden">
-                      Quantité :{" "}
-                    </span>
-
-                    {item.quantity}
-                  </div>
-
-                  <div className="text-sm">
-                    <span className="text-muted-foreground md:hidden">
-                      Prix :{" "}
-                    </span>
-
-                    {formatCurrency(item.unit_price)}
-                  </div>
-
-                  <div className="font-semibold md:text-right">
-                    <span className="text-muted-foreground md:hidden">
-                      Total :{" "}
-                    </span>
-
-                    {formatCurrency(item.total_amount)}
-                  </div>
+                  <DeletePaymentButton paymentId={payment.id} />
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <FileText className="mb-3 size-10 text-muted-foreground" />
-
-              <p className="font-medium">Aucun produit</p>
-            </div>
+            <EmptyState
+              title="Aucun paiement enregistré"
+              description="Les paiements effectués apparaîtront ici."
+            />
           )}
         </CardContent>
       </Card>
 
-      {/* Notes */}
-
-      {invoice.notes && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            <p className="text-muted-foreground">{invoice.notes}</p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+      {invoice.notes ? (
+        <section className="rounded-xl border border-border bg-card p-4 md:p-6">
+          <h3 className="text-xl font-semibold">Notes</h3>
+          <p className="mt-3 text-muted-foreground">{invoice.notes}</p>
+        </section>
+      ) : null}
+    </PageContainer>
   );
 }

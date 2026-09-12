@@ -1,20 +1,12 @@
 "use client";
 
 import { useState } from "react";
-
 import Link from "next/link";
+import { Search, Users } from "lucide-react";
 
-import {
-  ArrowRight,
-  CheckCircle2,
-  Phone,
-  Search,
-  TriangleAlert,
-  Users,
-} from "lucide-react";
-
+import { ClientCard } from "@/components/clients/client-card";
+import { EmptyState } from "@/components/layout/empty-state";
 import { Input } from "@/components/ui/input";
-
 import {
   Select,
   SelectContent,
@@ -22,39 +14,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatCurrency } from "@/lib/format";
 
 interface Client {
   client_id: string;
-
   name: string;
-
   phone: string | null;
-
   address: string | null;
-
   total_invoices: number;
-
   total_sales: string;
-
   total_received: string;
-
   total_refunded: string;
-
   net_paid: string;
-
   total_credit: string;
 }
 
 interface ClientsListProps {
   clients: Client[];
-}
-
-function formatCurrency(amount: number | string) {
-  return new Intl.NumberFormat("fr-MA", {
-    style: "currency",
-    currency: "MAD",
-    maximumFractionDigits: 2,
-  }).format(Number(amount));
 }
 
 function hasCredit(amount: string | number) {
@@ -64,6 +40,7 @@ function hasCredit(amount: string | number) {
 export function ClientsList({ clients }: ClientsListProps) {
   const [search, setSearch] = useState("");
   const [creditFilter, setCreditFilter] = useState("all");
+
   const filteredClients = clients.filter((client) => {
     const searchValue = search.toLowerCase();
 
@@ -83,165 +60,105 @@ export function ClientsList({ clients }: ClientsListProps) {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Recherche et filtre */}
-
+    <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row">
-        {/* Recherche */}
-
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
-
+          <Search className="absolute top-3.5 left-3 size-4 text-muted-foreground md:top-3" />
           <Input
             placeholder="Rechercher un client..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             className="pl-10"
+            aria-label="Rechercher un client"
           />
         </div>
-
-        {/* Filtre crédit */}
 
         <Select value={creditFilter} onValueChange={setCreditFilter}>
           <SelectTrigger className="w-full sm:w-[220px]">
             <SelectValue placeholder="Filtrer les clients" />
           </SelectTrigger>
-
           <SelectContent>
             <SelectItem value="all">Tous les clients</SelectItem>
-
             <SelectItem value="with-credit">Avec crédit</SelectItem>
-
             <SelectItem value="without-credit">Sans crédit</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {/* Résultats */}
-
       <p className="text-sm text-muted-foreground">
-        {filteredClients.length} client(s) trouvé(s)
+        {filteredClients.length} client(s)
       </p>
 
-      {/* Liste */}
-
       {filteredClients.length > 0 ? (
-        <div className="md:overflow-hidden md:rounded-xl md:border">
-          {/* Header */}
-
-          <div className="hidden grid-cols-[2fr_1.5fr_1.5fr_1fr] gap-4 border-b bg-muted/50 px-6 py-4 text-sm font-medium text-muted-foreground md:grid">
-            <div>Client</div>
-
-            <div>Téléphone</div>
-
-            <div>Total ventes</div>
-
-            <div className="text-right">Crédit</div>
-          </div>
-
-          {/* Clients */}
-
-          <div className="space-y-3 md:space-y-0 md:divide-y">
+        <>
+          <div className="space-y-3 md:hidden">
             {filteredClients.map((client) => (
-              <Link
+              <ClientCard
                 key={client.client_id}
-                href={`/clients/${client.client_id}`}
-                className="group relative grid gap-4 rounded-xl border bg-card p-4 shadow-sm transition-colors hover:bg-muted/50 md:rounded-none md:border-0 md:px-6 md:py-4 md:shadow-none md:grid-cols-[2fr_1.5fr_1.5fr_1fr] md:items-center md:gap-4"
-              >
-                {/* Client */}
-
-                <div className="flex items-center gap-3">
-                  <div className="rounded-full bg-muted p-2.5">
-                    <Users className="size-4 text-muted-foreground" />
-                  </div>
-
-                  <div>
-                    <p className="font-medium">{client.name}</p>
-
-                    {client.address && (
-                      <p className="text-sm text-muted-foreground">
-                        {client.address}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Téléphone */}
-
-                <div className="text-sm text-muted-foreground">
-                  <span className="flex items-center gap-2">
-                    <Phone className="size-4 md:hidden" />
-                    {client.phone ?? "Téléphone non renseigné"}
-                  </span>
-                </div>
-
-                {/* Total ventes */}
-
-                <div>
-                  <p className="text-sm text-muted-foreground md:hidden">
-                    Total ventes
-                  </p>
-
-                  <p className="font-medium text-primary">
-                    {formatCurrency(client.total_sales)}
-                  </p>
-
-                  <p className="text-xs text-muted-foreground md:hidden">
-                    {client.total_invoices} facture(s)
-                  </p>
-                </div>
-
-                {/* Crédit */}
-
-                {/* Crédit */}
-
-                <div className="md:text-right">
-                  <p className="text-sm text-muted-foreground md:hidden">
-                    Crédit
-                  </p>
-
-                  {hasCredit(client.total_credit) ? (
-                    <div className="flex items-center gap-2 md:justify-end">
-                      <TriangleAlert className="size-4 text-destructive" />
-
-                      <div>
-                        <p className="font-semibold text-destructive">
-                          {formatCurrency(client.total_credit)}
-                        </p>
-
-                        <p className="text-xs text-muted-foreground">À payer</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 md:justify-end">
-                      <CheckCircle2 className="size-4 text-green-600" />
-
-                      <div>
-                        <p className="font-semibold">Aucun crédit</p>
-
-                        <p className="text-xs text-muted-foreground">
-                          Client à jour
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <ArrowRight className="absolute right-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground transition-transform group-hover:translate-x-1 md:hidden" />
-              </Link>
+                id={client.client_id}
+                name={client.name}
+                phone={client.phone}
+                totalInvoices={client.total_invoices}
+                totalSales={client.total_sales}
+                totalCredit={client.total_credit}
+              />
             ))}
           </div>
-        </div>
+
+          <div className="hidden overflow-hidden rounded-xl border border-border bg-card md:block">
+            <table className="w-full text-sm">
+              <thead className="border-b bg-muted/40 text-left text-muted-foreground">
+                <tr>
+                  <th className="px-5 py-3 font-medium">Client</th>
+                  <th className="px-5 py-3 font-medium">Téléphone</th>
+                  <th className="px-5 py-3 font-medium">Factures</th>
+                  <th className="px-5 py-3 font-medium">Total</th>
+                  <th className="px-5 py-3 font-medium">Crédit</th>
+                  <th className="px-5 py-3 font-medium">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredClients.map((client) => (
+                  <tr key={client.client_id} className="border-b last:border-b-0">
+                    <td className="px-5 py-3 font-medium">{client.name}</td>
+                    <td className="px-5 py-3 text-muted-foreground">
+                      {client.phone ?? "—"}
+                    </td>
+                    <td className="px-5 py-3">{client.total_invoices}</td>
+                    <td className="px-5 py-3 font-medium">
+                      {formatCurrency(client.total_sales)}
+                    </td>
+                    <td className="px-5 py-3">
+                      {hasCredit(client.total_credit) ? (
+                        <span className="font-medium text-warning">
+                          {formatCurrency(client.total_credit)}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <Link
+                        href={`/clients/${client.client_id}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        Voir
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-xl border py-12 text-center">
-          <Users className="mb-3 size-10 text-muted-foreground" />
-
-          <p className="font-medium">Aucun client trouvé</p>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            Essayez de modifier votre recherche.
-          </p>
-        </div>
+        <EmptyState
+          icon={<Users className="size-8" />}
+          title="Aucun client trouvé"
+          description="Essayez de modifier votre recherche."
+        />
       )}
     </div>
   );

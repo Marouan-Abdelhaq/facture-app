@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import { EditClientForm } from "@/components/clients/edit-client-form";
+import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 
 interface EditClientPageProps {
   params: Promise<{
@@ -33,18 +35,9 @@ export default async function EditClientPage({ params }: EditClientPageProps) {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">
-          Modifier le client
-        </h2>
-
-        <p className="text-muted-foreground">
-          Modifiez les informations de {client.name}.
-        </p>
-      </div>
-
+    <PageContainer className="max-w-2xl">
+      <PageHeader description={`Modifiez les informations de ${client.name}.`} />
       <EditClientForm client={client} />
-    </div>
+    </PageContainer>
   );
 }

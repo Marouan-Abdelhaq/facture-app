@@ -1,7 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
@@ -24,10 +24,10 @@ export function AppShell({ children }: AppShellProps) {
     <div className="flex h-screen flex-col overflow-hidden md:flex-row">
       <Sidebar />
 
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-muted/30">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background">
         <Header />
 
-        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pb-24 pt-5 sm:p-6 lg:p-8">
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pb-[var(--page-bottom-spacing)] pt-5 md:px-6 md:pt-6 lg:px-8 lg:pt-8">
           {children}
         </div>
       </main>

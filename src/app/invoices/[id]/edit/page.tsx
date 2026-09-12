@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import { EditInvoiceForm } from "@/components/invoices/edit-invoice-form";
+import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 
 interface EditInvoicePageProps {
   params: Promise<{
@@ -122,22 +124,16 @@ export default async function EditInvoicePage({
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">
-          Modifier la facture
-        </h2>
-
-        <p className="text-muted-foreground">
-          Modifiez les informations de la facture {invoice.invoice_number}.
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        description={`Modifiez les informations de la facture ${invoice.invoice_number}.`}
+      />
 
       <EditInvoiceForm
         invoice={invoice}
         clients={clients ?? []}
         items={items ?? []}
       />
-    </div>
+    </PageContainer>
   );
 }
