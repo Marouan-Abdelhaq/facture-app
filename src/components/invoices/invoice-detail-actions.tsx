@@ -13,9 +13,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DownloadInvoicePdf } from "@/components/invoices/download-invoice-pdf";
 
+import { DeleteInvoiceButton } from "@/components/invoices/delete-invoice-button";
+
 interface InvoiceDetailActionsProps {
   invoiceId: string;
+
+  invoiceNumber: string;
+
   showPaymentLink: boolean;
+
   pdf: {
     userName: string;
     invoice: ComponentProps<typeof DownloadInvoicePdf>["invoice"];
@@ -25,6 +31,7 @@ interface InvoiceDetailActionsProps {
 
 export function InvoiceDetailActions({
   invoiceId,
+  invoiceNumber,
   showPaymentLink,
   pdf,
 }: InvoiceDetailActionsProps) {
@@ -38,6 +45,10 @@ export function InvoiceDetailActions({
             Modifier
           </Link>
         </Button>
+        <DeleteInvoiceButton
+          invoiceId={invoiceId}
+          invoiceNumber={invoiceNumber}
+        />
         {showPaymentLink ? (
           <Button asChild>
             <a href="#ajouter-paiement">Ajouter un paiement</a>
@@ -63,11 +74,21 @@ export function InvoiceDetailActions({
             <div className="px-1 py-1">
               <DownloadInvoicePdf {...pdf} />
             </div>
+
             {showPaymentLink ? (
               <DropdownMenuItem asChild className="min-h-11">
                 <a href="#ajouter-paiement">Ajouter un paiement</a>
               </DropdownMenuItem>
             ) : null}
+
+            <div className="my-1 border-t border-border" />
+
+            <div className="px-1 py-1">
+              <DeleteInvoiceButton
+                invoiceId={invoiceId}
+                invoiceNumber={invoiceNumber}
+              />
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

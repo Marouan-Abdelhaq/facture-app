@@ -46,6 +46,7 @@ interface DownloadInvoicePdfProps {
     id: string;
     product_name: string;
     quantity: number;
+    unit: string;
     unit_price: number | string;
     total_amount: number | string;
   }[];

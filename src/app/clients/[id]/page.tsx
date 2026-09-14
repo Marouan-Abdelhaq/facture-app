@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+import { DeleteClientButton } from "@/components/clients/delete-client-button";
+
 function formatCurrency(amount: number | string) {
   return new Intl.NumberFormat("fr-MA", {
     style: "currency",
@@ -146,12 +148,16 @@ export default async function ClientPage({ params }: ClientPageProps) {
           </div>
         </div>
 
-        <Button variant="outline" asChild>
-          <Link href={`/clients/${client.id}/edit`}>
-            <Pencil className="mr-2 size-4" />
-            Modifier
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href={`/clients/${client.id}/edit`}>
+              <Pencil className="mr-2 size-4" />
+              Modifier
+            </Link>
+          </Button>
+
+          <DeleteClientButton clientId={client.id} clientName={client.name} />
+        </div>
       </div>
 
       {/* Informations */}

@@ -104,6 +104,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
       id,
       product_name,
       quantity,
+      unit,
       unit_price,
       total_amount
     `,
@@ -119,7 +120,9 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
         <h2 className="font-semibold text-destructive">
           Erreur lors du chargement
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">{itemsError.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {itemsError.message}
+        </p>
       </div>
     );
   }
@@ -153,7 +156,8 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
     );
   }
 
-  const showPayment = invoice.status !== "paid" && invoice.status !== "overpaid";
+  const showPayment =
+    invoice.status !== "paid" && invoice.status !== "overpaid";
 
   return (
     <PageContainer>
@@ -172,6 +176,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
 
         <InvoiceDetailActions
           invoiceId={invoice.id}
+          invoiceNumber={invoice.invoice_number}
           showPaymentLink={showPayment}
           pdf={{
             userName,
@@ -190,7 +195,9 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
           {invoice.clients?.phone ?? "Pas de téléphone"}
         </p>
         {invoice.clients?.address ? (
-          <p className="text-sm text-muted-foreground">{invoice.clients.address}</p>
+          <p className="text-sm text-muted-foreground">
+            {invoice.clients.address}
+          </p>
         ) : null}
         {invoice.clients?.id ? (
           <Link
@@ -208,7 +215,10 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
           <>
             <div className="mt-4 space-y-3 md:hidden">
               {items.map((item) => (
-                <div key={item.id} className="rounded-xl border border-border p-4">
+                <div
+                  key={item.id}
+                  className="rounded-xl border border-border p-4"
+                >
                   <p className="font-medium">{item.product_name}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {item.quantity} × {formatCurrency(item.unit_price)}
@@ -235,7 +245,9 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
                     <tr key={item.id} className="border-b last:border-b-0">
                       <td className="py-3 font-medium">{item.product_name}</td>
                       <td className="py-3">{item.quantity}</td>
-                      <td className="py-3">{formatCurrency(item.unit_price)}</td>
+                      <td className="py-3">
+                        {formatCurrency(item.unit_price)}
+                      </td>
                       <td className="py-3 text-right font-semibold">
                         {formatCurrency(item.total_amount)}
                       </td>
@@ -258,11 +270,15 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
         <dl className="mt-4 space-y-3 text-sm">
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">Total</dt>
-            <dd className="font-semibold">{formatCurrency(invoice.total_amount)}</dd>
+            <dd className="font-semibold">
+              {formatCurrency(invoice.total_amount)}
+            </dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">Payé</dt>
-            <dd className="font-semibold">{formatCurrency(invoice.paid_amount)}</dd>
+            <dd className="font-semibold">
+              {formatCurrency(invoice.paid_amount)}
+            </dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">Restant</dt>
@@ -308,7 +324,9 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
                   className="flex items-start justify-between gap-3 rounded-xl border border-border p-4 md:items-center"
                 >
                   <div>
-                    <p className="font-semibold">{formatCurrency(payment.amount)}</p>
+                    <p className="font-semibold">
+                      {formatCurrency(payment.amount)}
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       {formatDate(payment.payment_date)}
                     </p>

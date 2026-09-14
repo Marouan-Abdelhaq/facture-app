@@ -24,8 +24,13 @@ interface Client {
 
 interface InvoiceItem {
   id?: string;
+
   product_name: string;
+
   quantity: number;
+
+  unit: string;
+
   unit_price: number;
 }
 
@@ -52,6 +57,7 @@ function createEmptyItem(): InvoiceItemDraft {
   return {
     product_name: "",
     quantity: 1,
+    unit: "pièce",
     unit_price: 0,
   };
 }
@@ -89,7 +95,10 @@ export function EditInvoiceForm({
 
         return {
           ...item,
-          [field]: field === "product_name" ? value : Number(value),
+          [field]:
+            field === "product_name" || field === "unit"
+              ? value
+              : Number(value),
         };
       }),
     );
@@ -178,9 +187,15 @@ export function EditInvoiceForm({
 
       const invoiceItems = itemsList.map((item) => ({
         invoice_id: invoice.id,
+
         product_name: item.product_name,
+
         quantity: item.quantity,
+
+        unit: item.unit.trim() || "pièce",
+
         unit_price: item.unit_price,
+
         total_amount: item.quantity * item.unit_price,
       }));
 
@@ -269,7 +284,9 @@ export function EditInvoiceForm({
       <section className="hidden items-center justify-between rounded-xl border border-border bg-card p-6 md:flex">
         <div>
           <p className="text-sm text-muted-foreground">Total</p>
-          <p className="text-2xl font-semibold">{formatCurrency(totalAmount)}</p>
+          <p className="text-2xl font-semibold">
+            {formatCurrency(totalAmount)}
+          </p>
         </div>
         <div className="flex gap-3">
           <Button type="button" variant="ghost" onClick={() => router.back()}>
@@ -285,7 +302,9 @@ export function EditInvoiceForm({
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs text-muted-foreground">Total</p>
-            <p className="text-lg font-semibold">{formatCurrency(totalAmount)}</p>
+            <p className="text-lg font-semibold">
+              {formatCurrency(totalAmount)}
+            </p>
           </div>
           <Button type="submit" disabled={loading} className="min-w-40">
             {loading ? "Modification..." : "Enregistrer"}

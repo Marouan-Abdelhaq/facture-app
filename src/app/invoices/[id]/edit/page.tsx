@@ -100,6 +100,7 @@ export default async function EditInvoicePage({
       id,
       product_name,
       quantity,
+      unit,
       unit_price,
       total_amount
     `,

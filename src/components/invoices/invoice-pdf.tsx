@@ -22,6 +22,7 @@ interface InvoicePdfProps {
     id: string;
     product_name: string;
     quantity: number;
+    unit: string;
     unit_price: number | string;
     total_amount: number | string;
   }[];
@@ -123,11 +124,16 @@ const styles = StyleSheet.create({
   },
 
   product: {
-    width: "40%",
+    width: "32%",
   },
 
   quantity: {
-    width: "15%",
+    width: "12%",
+    textAlign: "center",
+  },
+
+  unit: {
+    width: "16%",
     textAlign: "center",
   },
 
@@ -137,7 +143,7 @@ const styles = StyleSheet.create({
   },
 
   total: {
-    width: "25%",
+    width: "20%",
     textAlign: "right",
   },
 
@@ -281,11 +287,9 @@ export function InvoicePdf({ invoice, items, userName }: InvoicePdfProps) {
 
           <View style={styles.tableHeader}>
             <Text style={styles.product}>Produit / Service</Text>
-
             <Text style={styles.quantity}>Qté</Text>
-
+            <Text style={styles.unit}>Unité</Text>
             <Text style={styles.price}>Prix</Text>
-
             <Text style={styles.total}>Total</Text>
           </View>
 
@@ -296,6 +300,8 @@ export function InvoicePdf({ invoice, items, userName }: InvoicePdfProps) {
               <Text style={styles.product}>{item.product_name}</Text>
 
               <Text style={styles.quantity}>{item.quantity}</Text>
+
+              <Text style={styles.unit}>{item.unit || "pièce"}</Text>
 
               <Text style={styles.price}>
                 {formatCurrency(item.unit_price)}
